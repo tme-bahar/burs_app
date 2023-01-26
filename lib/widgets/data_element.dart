@@ -1,5 +1,6 @@
 import 'package:burs_app/models/data_day_model.dart';
 import 'package:burs_app/models/predict_day_model.dart';
+import 'package:burs_app/widgets/show_data_dialog.dart';
 import 'package:flutter/material.dart';
 
 import '../theme.dart';
@@ -8,8 +9,13 @@ class DataElement extends StatelessWidget{
   final double? width;
   final double? height;
   final DataDayModel model;
-  const DataElement({super.key, this.width, this.height,required this.model});
-
+  final String? defaultName;
+  DataElement({super.key, this.width, this.height,required this.model, this.defaultName});
+  final String lastData = 'آخرین داده';
+  final List<String> predictTitles =['اولین روز پیشبینی','دومین روز پیشبینی','سومین روز پیشبینی','چهارمین روز پیشبینی',
+    'پنجمین روز پیشبینی','ششمین روز پیشبینی','هفتمین روز پیشبینی','هشتمین روز پیشبینی',
+    'نهمین روز پیشبینی','دهمین روز پیشبینی',
+  ];
   @override
   Widget build(BuildContext context) {
     const double height = 75;
@@ -31,23 +37,31 @@ class DataElement extends StatelessWidget{
             elevation: MaterialStateProperty.all(isPredict ? 5 : 0),
             backgroundColor: MaterialStateProperty.all(isPredict ?ThemeColors.PRIMARY_DARK: ThemeColors.PRIMARY_LIGHT)
           ),
-          onPressed: isPredict ? ()=>{  } : null,
+          onPressed: isPredict ?
+              (){
+              showDialog(
+
+              context: context,
+              builder: (_) => ShowDataDialog(model: model as PredictDayModel,onCancel: (){Navigator.of(context).pop();},),
+              );
+              }
+          : null,
           child: Padding(padding: EdgeInsets.all(5),
-            child: Stack(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Align(alignment: Alignment.centerLeft,
-                  child: Text(model.name,
+                Text(getName(model),
                       style: TextStyle(color: isPredict ?ThemeColors.LIGHT: ThemeColors.DARK,fontWeight: FontWeight.bold,fontSize: 18),),
-                ),
-                Align(alignment: Alignment.centerRight,
-                  child: Text(model.main.toString(),
+
+                Text(model.main.toInt().toString(),
                     style: TextStyle(color: isPredict ?ThemeColors.LIGHT: ThemeColors.DARK,fontWeight: FontWeight.bold,fontSize: 18),),
-                )
+
               ],
             )
           ),)
       ,)
     );
   }
+  String getName(DataDayModel model) => model.name.isEmpty ? defaultName??'' : model.name;
 
 }

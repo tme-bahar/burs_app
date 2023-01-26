@@ -31,8 +31,13 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   syncfusion_flutter_charts: ^20.4.41
-
+  masked_text_field: any
+  file_picker: any
+  http: ^0.12.0
+  path_provider: any
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
@@ -53,6 +58,13 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  assets:
+    - assets/images/profileTop.jpg
+    - assets/images/img.png
+  fonts:
+    - family: Vazir
+      fonts:
+        - asset: assets/fonts/vazir.ttf
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

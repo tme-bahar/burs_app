@@ -1,3 +1,4 @@
+import 'package:burs_app/models/predict_model.dart';
 import 'package:burs_app/theme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -6,10 +7,12 @@ class HomeListElement extends StatefulWidget{
   final double? width;
   final double? height;
   final Widget? circleChild;
-  final Function(int)? onTap;
+  final Function(int,PredictModel?)? onTap;
   final int? index;
   final String? title;
   final String? subTitle;
+  final PredictModel? pm;
+  final Function(int,PredictModel?)? onDuplicateTap;
 
   const HomeListElement({
   super.key,
@@ -19,7 +22,8 @@ class HomeListElement extends StatefulWidget{
   this.onTap,
   this.index,
   this.title,
-  this.subTitle
+  this.subTitle,
+  this.pm, this.onDuplicateTap
   });
   @override
   State<StatefulWidget> createState() => _homeListElement();
@@ -34,7 +38,7 @@ class _homeListElement extends State<HomeListElement>{
 
 
     return InkWell(
-      onTap: ()=> widget.onTap != null ? widget.onTap!(widget.index ?? 0) : (){},
+      onTap: ()=> widget.onTap != null ? widget.onTap!(widget.index ?? 0,widget.pm) : (){},
         child:Container(color: ThemeColors.LIGHT
           ,width: widget.width ?? MediaQuery.of(context).size.width
           ,height: widget.height ?? height + 2,
@@ -49,24 +53,34 @@ class _homeListElement extends State<HomeListElement>{
                   child: Container(
                     height: (widget.height ?? height) - 2*circleVerticalPadding,
                     width: (widget.height ?? height) - 2*circleVerticalPadding,
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: ThemeColors.PRIMARY_LIGHT
+                      color: widget.onTap != null ? ThemeColors.PRIMARY_LIGHT : Colors.yellow
                     ),
                     child: widget.circleChild ?? const Icon(Icons.help_outline),
                   ),
                 ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    co(Text(widget.title ?? '',
-                      style: const TextStyle(color: ThemeColors.DARK,fontWeight: FontWeight.bold,fontSize: 20),),
-                    ),
-                    if(widget.subTitle != null)
-                      co(Text(widget.subTitle ?? '',
-                              style: const TextStyle(color: ThemeColors.PRIMARY_DARK,fontSize: 10),)
-                      )
-                ],),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width*(.6),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      co(Text(widget.title ?? '',
+                        style: const TextStyle(color: ThemeColors.DARK,fontWeight: FontWeight.bold,fontSize: 20),),
+                      ),
+                      if(widget.subTitle != null)
+                        co(Text(widget.subTitle ?? '',
+                          style: const TextStyle(color: ThemeColors.PRIMARY_DARK,fontSize: 10),)
+                        )
+                    ],),
+                ),
+                if(widget.onDuplicateTap != null)
+                  FloatingActionButton.small(
+                    heroTag: 'duplicate ${widget.title}',
+                      onPressed: ()=>widget.onDuplicateTap!(widget.index??0,widget.pm),
+                      child: Icon(Icons.note_add_outlined,color: ThemeColors.PRIMARY_DARK),
+                    backgroundColor: ThemeColors.LIGHT,
+                  ),
 
               ],
           ),
