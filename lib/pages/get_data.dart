@@ -31,6 +31,10 @@ class _getData extends State<GetData>{
     return Scaffold(
       backgroundColor: ThemeColors.LIGHT,
       appBar: AppBar(
+        actions: [
+        Padding(padding: const EdgeInsets.only(left: 10, right: 0,top: 15,bottom: 5),
+            child:Image.asset('assets/images/img.png'))
+      ],
         title: const Text('دریافت آنلاین'),
       ),
       body: Center(

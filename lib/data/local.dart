@@ -2,8 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
-
+import 'package:path/path.dart';
 import '../models/data_day_model.dart';
 import '../models/predict_day_model.dart';
 import '../models/predict_model.dart';
@@ -50,7 +51,8 @@ class LocalData {
     return result;
   }
 
-  static Future saveLocal(String? data,PredictModel current,VoidCallback viewEffect) async{
+  static Future saveLocal(String? data,PredictModel current,VoidCallback viewEffect,BuildContext context) async{
+    data = betterData(data??'""');
     FileStorage dataBase = FileStorage(name:LocalData.localFileName);
     print('database');
     String? s = await dataBase.read();
@@ -61,12 +63,27 @@ class LocalData {
     dataMap['info']['count'] = ++dataMap['info']['count'];
     dataMap['data'][current.name] = {'index':index,'p':current.p,'c':current.c,'type':current.t,'L1':current.L1i,'L2':current.L2i,'path':current.filePath};
     dataBase.write(json.encode(dataMap));
+    try{
+      jsonDecode(data);
+      FileStorage self = FileStorage(name: 'file$index.json');
+      self.write(data);
+      viewEffect();
+      print(await dataBase.read());
+      print(data);
+    }catch(x){
+      showSnack('سرور با خطا مواجه شده است', context);
+    }
 
-    FileStorage self = FileStorage(name: 'file$index.json');
-    self.write(data ?? '');
-    viewEffect();
-    print(await dataBase.read());
-    print(data);
+  }
+
+  static String betterData(String str){
+    StringBuffer sb = StringBuffer();
+    for(int i = 1; i < str.length-1; i++) {
+      if(str[i] != '\\') {
+        sb.write(str[i]);
+      }
+    }
+    return sb.toString();
   }
 
   static const Map emptyMap = {"info":{"count" : 0},"data" : {}};
@@ -74,7 +91,7 @@ class LocalData {
   static int findL1(String i)=> L1.indexWhere((element) => element == i);
   static int findL2(String i)=> L2.indexWhere((element) => element == i);
 
-  void clearAll(int n){
+  static void clearAll(int n){
     clearFile(localFileName);
     FileStorage fs = FileStorage(name: localFileName);
     fs.write('');
@@ -83,10 +100,24 @@ class LocalData {
     }
 
   }
-  void clearFile(String name){
+  static void clearFile(String name){
     FileStorage fs = FileStorage(name: name);
     fs.write('');
   }
+
+  static Future deletePr(String name,BuildContext context)async{
+    FileStorage data = FileStorage(name:localFileName);
+    String? ss = await data.read();
+
+    Map dataMap = ss == null || ss.trim().isEmpty ? emptyMap :json.decode(ss);
+    dataMap['data'].removeWhere((key, value) => key == name);
+    data.write(json.encode(dataMap));
+    showSnack('$name حذف شد', context);
+    print('$name deleted');
+  }
+  static void showSnack(String text,BuildContext context) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    content: Text(text),
+  ));
 }
 class FileStorage {
   final String name;
@@ -113,4 +144,14 @@ class FileStorage {
       return null;
     }
   }
+
+  Future rename(String newName) async{
+    File f = await _localFile;
+    print('Original path: ${f.path}');
+    String dir = dirname(f.path);
+    String newPath = join(dir, newName);
+    print('NewPath: ${newPath}');
+    f.renameSync(newPath);
+  }
+
 }

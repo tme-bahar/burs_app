@@ -2,6 +2,7 @@
 
 
 import 'dart:io';
+import 'dart:math';
 
 import 'package:burs_app/widgets/combo_box.dart';
 import 'package:burs_app/widgets/file_element.dart';
@@ -12,7 +13,7 @@ import 'package:flutter/material.dart';
 import '../theme.dart';
 import '../widgets/customized_text_field.dart';
 import 'get_data.dart';
-
+import 'package:path/path.dart';
 class NewPredict extends StatefulWidget{
   final String? name;
   final int? p;
@@ -71,6 +72,7 @@ class _newPredict extends State<NewPredict>{
     }
     loaded = true;
     return Scaffold(
+
       backgroundColor: ThemeColors.LIGHT,
       appBar: AppBar(
         title: const Text('پیشبینی جدید'),
@@ -103,7 +105,7 @@ class _newPredict extends State<NewPredict>{
                     });
                   },));
             },
-              textColor: selectedType == 'انتخاب کنید' ? null : ThemeColors.DARK,
+              textColor: selectedTypeIndex == 4 ? null : ThemeColors.DARK,
             ),
             const SizedBox(height: 25,),
             ComboBox(label: 'بازه اطمینان اول', text: selectedL1, onTap: (i){
@@ -120,7 +122,7 @@ class _newPredict extends State<NewPredict>{
                       });
                     },));
             },
-            textColor: selectedType == 'انتخاب کنید' ? null : ThemeColors.DARK,),
+            textColor: selectedL1Index == 4 ? null : ThemeColors.DARK,),
             const SizedBox(height: 25,),
             ComboBox(label: 'بازه اطمینان دوم', text: selectedL2, onTap: (i){
               showDialog<void>(
@@ -136,7 +138,7 @@ class _newPredict extends State<NewPredict>{
                       });
                     },));
             },
-            textColor: selectedType == 'انتخاب کنید' ? null : ThemeColors.DARK,),
+            textColor: selectedL2Index == 4 ? null : ThemeColors.DARK,),
             const SizedBox(height: 25,),
             Padding(padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 20),
             child:Text('داده قبلی از کجا دریافت شود ؟',style: _style(20),),),
@@ -152,13 +154,27 @@ class _newPredict extends State<NewPredict>{
                           Text('  از فایل',style: _style(),),
                         ],
                         onPressed:()async {
-                          FilePickerResult? result = await FilePicker.platform.pickFiles(allowMultiple: true);
-
+                          FilePickerResult? result = await FilePicker.platform.pickFiles(
+                              allowMultiple: true,
+                            type: FileType.any,
+                          ).catchError((e,r){
+                              // Handle error here
+                            showSnack('file recieve error', context);
+                              return Future.error(e);
+                        });
                           if (result != null) {
-                            List<File> files = result.paths.map((path) => File(path)).toList();
-                            setState(() {
-                              widget.data = files[0];
-                            });
+                            List<File> files = result.paths.map((path) => File(path!)).toList();
+                            List<String> exten = files[0].path.split('.');
+                            if(exten[exten.length-1] != 'csv') {
+                              showSnack('پسوند فایل باید csv باشد', context);
+                            }
+                              showSnack(result.paths[0]!, context);
+                              await rename(files[0], 'input.csv');
+                              setState(() {
+                                widget.data = File
+                                  (files[0].path.replaceAll(files[0].path.split('/').last,'input.csv'));
+                              });
+
                           } else {
                             // User canceled the picker
                           }
@@ -190,22 +206,56 @@ class _newPredict extends State<NewPredict>{
             Padding(padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 20),
               child:
                 SpecialButton(
-                  onPressed: ()=>{Navigator.pop(context),widget.onAddClick(
-                      controller[0].text,int.parse(controller[1].text),int.parse(controller[2].text),
-                      (selectedTypeIndex+1).toString(),int.parse(selectedL1),int.parse(selectedL2),widget.data
-                  )},
+                  onPressed: (){
+                    if(controller[0].text.isEmpty) {
+                      showSnack('نام پیش بینی نباید خالی باشد', context);
+                    } else if(widget.data == null) {
+                      showSnack('لطفاً یک فایل داده انتخاب کنید', context);
+                    } else if(selectedL1Index == 4) {
+                      showSnack('لطفاً بازه اطمینان اول را انتخاب کنید', context);
+                    } else if(selectedL2Index == 4) {
+                      showSnack('لطفاً بازه اطمینان دوم را انتخاب کنید', context);
+                    } else if(controller[1].text.isEmpty) {
+                      showSnack('تعداد روز های پیش بینی نباید خالی باشد', context);
+                    } else if(selectedTypeIndex == 4) {
+                      showSnack('لطفا روش پیش بینی را انتخاب کنید', context);
+                    } else if(controller[2].text.isEmpty) {
+                      showSnack('تعداد روز های مبنای تصمیم گیری نباید خالی باشد', context);
+                    } else if(int.parse(controller[2].text) < 50) {
+                      showSnack('تعداد روز های مبنای تصمیم گیری باید بیش از 50 باشد', context);
+                    } else if(int.parse(controller[1].text) > 25) {
+                      showSnack('تعداد روز های پیش بینی باید کمتر از 25 باشد', context);
+                    }  else{
+                      Navigator.pop(context);
+                      widget.onAddClick(
+                        controller[0].text,int.parse(controller[1].text),int.parse(controller[2].text),
+                        (selectedTypeIndex+1).toString(),int.parse(selectedL1),int.parse(selectedL2),widget.data);
+                    }
+                    },
                   backGroundColor: ThemeColors.PRIMARY_DARK,
                   children: [
                     Text('افزودن',style: _style(null,ThemeColors.LIGHT),)
                   ],
                 )
             ),
-
+            const SizedBox(height: 60,)
           ]
         ),
       ),
     );
   }
+
+  Future rename(File f,String newName) async{
+    print('Original path: ${f.path}');
+    String dir = dirname(f.path);
+    String newPath = join(dir, newName);
+    print('NewPath: ${newPath}');
+    f.renameSync(newPath);
+  }
+
+  static void showSnack(String text,BuildContext context) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    content: Text(text),
+  ));
 
   TextStyle _style([double? size,Color? color]) =>
       TextStyle(color: color ?? ThemeColors.PRIMARY_DARK,fontSize: size ?? 15,

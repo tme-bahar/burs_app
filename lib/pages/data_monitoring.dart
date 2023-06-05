@@ -4,6 +4,7 @@ import 'package:burs_app/models/data_day_model.dart';
 import 'package:burs_app/models/predict_model.dart';
 import 'package:burs_app/pages/profile.dart';
 import 'package:burs_app/widgets/dynamic_tab_bar.dart';
+import 'package:burs_app/widgets/line.dart';
 import 'package:burs_app/widgets/text_style.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -29,76 +30,84 @@ class _dataMonitoring extends State<DataMonitoring>{
   List<String> chartTitles = ['همه','داده و پیشبینی','بازه اطمینان اول','بازه اطمینان دوم'];
 
   String lastData = 'آخرین داده';
-  List<String> predictTitles =['اولین روز پیشبینی','دومین روز پیشبینی','سومین روز پیشبینی','چهارمین روز پیشبینی',
-    'پنجمین روز پیشبینی','ششمین روز پیشبینی','هفتمین روز پیشبینی','هشتمین روز پیشبینی',
-    'نهمین روز پیشبینی','دهمین روز پیشبینی',
+  List<String> predictTitles =['اول','دوم','سوم','چهارم',
+    'پنجم','ششم','هفتم','هشتم',
+    'نهم','دهم','یازدهم','دوازدهم','سیزدهم','چهاردهم','پانزدهم'
+    ,'شانزدهم','هفدهم','هجدهم','نوزدهم','بیستم','بیست و یکم','بیست و دوم',
+    'بیست و سوم','بیست و چهارم','بیست و پنجم',
   ];
 
   int get getMin {
     int min = 9223372036854775807;
     List<DataDayModel> data = widget.data[widget.current].data;
     for(DataDayModel d in data.sublist(0,50))
-      {
-        if(d is PredictDayModel){
-          if(min > d.min80) {
-            // print('min 80 : ${d.index},${d.max80}');
-            min = d.max80.toInt();
-          }
+    {
+      if(d is PredictDayModel){
+        if(min > d.min80) {
+          // print('min 80 : ${d.index},${d.max80}');
+          min = d.max80.toInt();
         }
-        else
-          {
-            if(min > d.main) {
-              // print('main : ${d.index},${d.main}');
-              min = d.main.toInt();
-            }
-          }
       }
+      else
+      {
+        if(min > d.main) {
+          // print('main : ${d.index},${d.main}');
+          min = d.main.toInt();
+        }
+      }
+    }
     // print('min $min');
     return min;
   }
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: ThemeColors.LIGHT,
-      appBar: AppBar(
-        title: const Text('نمایش داده'),
-        actions: [Padding(padding: const EdgeInsets.all(10),
-          child: InkWell(child: const Icon(Icons.account_circle,size: 40,),
-            onTap: (){Navigator.push(context, MaterialPageRoute(builder: (_) => const Profile()));},),),
-          Padding(padding: const EdgeInsets.only(left: 10, right: 0,top: 15,bottom: 5),
-              child:Image.asset('assets/images/img.png'))
-        ],
-      ),
-      body: Center(
-        child: ListView(
-          children: children(),
-        ),
-      ),
+    return Row(
+      children: [
+        if(MediaQuery.of(context).size.width > 700)
+          SizedBox(width: 300,child:MyHomePage(title: 'پیش بینی ها')),
+        if(MediaQuery.of(context).size.width > 700)
+          Line(height: MediaQuery.of(context).size.width,width: 1,color: const Color(0xFFE8F1F2),),
+        SizedBox(width: MediaQuery.of(context).size.width-(MediaQuery.of(context).size.width > 700 ? 301 : 0),child: monitor,),
+      ],
     );
+
   }
+  
+  Widget get monitor => Scaffold(
+
+    backgroundColor: ThemeColors.LIGHT,
+    appBar:
+      MediaQuery.of(context).size.width > 700?null:
+        AppBar(title: const Text('نمایش داده'),),
+    body: Center(
+      child: ListView(
+        children: children(),
+      ),
+    ),
+  );
   List<Widget> children(){
     List<Widget> result = List.empty(growable: true);
 
     ///tab bar
-    result.add(SizedBox(
-        width: MediaQuery.of(context).size.width,
-        height: 60,
-        child:
-        DynamicTabBar(data: List.generate(widget.data.length, (index) => widget.data[index].name),
-          selected:widget.current,
-          onItemClick: (i) => setState(()=> widget.current = i)
-          ,
-          onAddClick: (){
-          Navigator.push(context, MaterialPageRoute(builder: (_) => MyHomePage(title: 'select a predict',
-            onItemClick: (i,pm){
-            setState(() {
-              widget.data.add(pm!);
-            });
-            Navigator.pop(context);
-            },)));
-          },
-        )
-    ));
+    // result.add(SizedBox(
+    //     width: MediaQuery.of(context).size.width,
+    //     height: 60,
+    //     child:
+    //     DynamicTabBar(data: List.generate(widget.data.length, (index) => widget.data[index].name),
+    //       selected:widget.current,
+    //       onItemClick: (i) => setState(()=> widget.current = i)
+    //       ,
+    //       onAddClick: (){
+    //         Navigator.push(context, MaterialPageRoute(builder: (_) => MyHomePage(title: 'یک پیش بینی انتخاب کنید',
+    //           onItemClick: (i,pm){
+    //             setState(() {
+    //               widget.data.add(pm!);
+    //             });
+    //             Navigator.pop(context);
+    //           },)));
+    //       },
+    //     )
+    // ));
 
     ///chart
     result.add(Padding(padding: EdgeInsets.all(30),
@@ -108,13 +117,14 @@ class _dataMonitoring extends State<DataMonitoring>{
                 borderRadius: const BorderRadius.all(Radius.circular(20)),color: Colors.white,
                 boxShadow: List<BoxShadow>.filled(1, const BoxShadow(color: Colors.grey,blurRadius: 10))
             ),
+            height: MediaQuery.of(context).size.width*0.4,
             child: //Padding(padding: const EdgeInsets.all(0),child:
             Stack(children: [
 
               Center(child:
-                FractionallySizedBox(widthFactor: 1.1,
+              FractionallySizedBox(widthFactor: 1,
                   child:lineChart(getCurrentChartSeries(),chartTitles[widget.currentChart])
-                )
+              )
               ),
               Align(alignment: Alignment.topRight,child:
               FloatingActionButton.small(
@@ -122,7 +132,7 @@ class _dataMonitoring extends State<DataMonitoring>{
                   child: const Icon(Icons.replay),
                   onPressed: () => setState(()
                   =>
-                    widget.currentChart = widget.currentChart == 3 ? 0 : ++widget.currentChart
+                  widget.currentChart = widget.currentChart == 3 ? 0 : ++widget.currentChart
 
 
                     ,))),
@@ -133,34 +143,98 @@ class _dataMonitoring extends State<DataMonitoring>{
     );
 
     ///days
-    for(int i = 0; i < widget.data[widget.current].data.length; i++){
-      result.add(DataElement(model: widget.data[widget.current].data[i],defaultName: getName(widget.data[widget.current].data[i]),));
-    }
+    // for(int i = 0; i < widget.data[widget.current].data.length; i++){
+    //   result.add(DataElement(model: widget.data[widget.current].data[i],defaultName: getName(widget.data[widget.current].data[i]),));
+    // }
+
+    result.add(Padding(padding: EdgeInsets.all(10),child: Text('پیش بینی ها',style: _style,),));
+    ///predicts
+    result.add(
+        DataTable(columns: [
+          DataColumn(label: Text('عنوان',style: _style,),),
+          DataColumn(label: Text('پیش بینی',style: _style,),),
+          if(MediaQuery.of(context).size.width > 1100)
+          DataColumn(label: Text('کران بالای بازه اطمینان اول',style: _style,),),
+          if(MediaQuery.of(context).size.width > 1100)
+          DataColumn(label: Text('کران پایین بازه اطمینان اول',style: _style,),),
+          if(MediaQuery.of(context).size.width > 1500)
+          DataColumn(label: Text('کران بالای بازه اطمینان دوم',style: _style,),),
+          if(MediaQuery.of(context).size.width > 1500)
+          DataColumn(label: Text('کران پایین بازه اطمینان دوم',style: _style,),),
+        ],
+            //rows: [],
+            rows: List.generate(widget.data[widget.current].p, (index1) =>
+            DataRow(cells: [
+              DataCell(Text(getName(widget.data[widget.current].data[index1]))),
+              DataCell(Text(widget.data[widget.current].data[index1].main.toInt().toString())),
+              if(MediaQuery.of(context).size.width > 1100)
+              DataCell(Text(((widget.data[widget.current].data[index1] as PredictDayModel).max80.toInt().toString()))),
+              if(MediaQuery.of(context).size.width > 1100)
+                DataCell(Text(((widget.data[widget.current].data[index1] as PredictDayModel).min95.toInt().toString()))),
+              if(MediaQuery.of(context).size.width > 1500)
+              DataCell(Text(((widget.data[widget.current].data[index1] as PredictDayModel).max95.toInt().toString()))),
+              if(MediaQuery.of(context).size.width > 1500)
+              DataCell(Text(((widget.data[widget.current].data[index1] as PredictDayModel).min80.toInt().toString()))),
+            ],
+              onSelectChanged: (v)=>showDialog(
+
+                context: context,
+                builder: (_) => ShowDataDialog(model: widget.data[widget.current].data[index1] as PredictDayModel,onCancel: (){Navigator.of(context).pop();},),
+              ),
+            )
+            ),
+          showCheckboxColumn: false,
+        )
+    );
+    result.add(Padding(padding: EdgeInsets.all(10),child: Text('داده ها',style: _style,),));
+
+    ///data
+    result.add(
+        DataTable(columns: [
+          DataColumn(label: Text('عنوان',style: _style,),),
+          DataColumn(label: Text('داده',style: _style,),),
+        ],
+            //rows: [],
+            rows: List.generate(widget.data[widget.current].data.length - widget.data[widget.current].p, (index1) =>
+                DataRow(cells: [
+                  DataCell(Text(getName(widget.data[widget.current].data[index1+widget.data[widget.current].p]))),
+                  DataCell(Text(widget.data[widget.current].data[index1+widget.data[widget.current].p].main.toInt().toString())),
+                ]))
+        )
+      //DataElement(model: widget.data[widget.current].data[i],defaultName: getName(widget.data[widget.current].data[i]),)
+    );
+
     return result;
   }
-  Widget lineChart(List<ChartSeries<DataDayModel, String>> data,String title){
-    return SfCartesianChart(
-      // Initialize category axis
-        primaryXAxis: CategoryAxis(isVisible: false),
-        primaryYAxis: NumericAxis(isVisible: false),
-        borderColor: Colors.transparent,
-        backgroundColor: Colors.transparent,
-        plotAreaBackgroundColor: Colors.transparent,
-        plotAreaBorderColor: Colors.transparent,
 
-        // Chart title
-        title: ChartTitle(text: title,),
-        // Enable legend
-        legend: Legend(isVisible: true,position: LegendPosition.bottom
-            ,width: '280'
+  TextStyle get _style => const TextStyle(color: ThemeColors.DARK,fontWeight: FontWeight.bold,fontSize: 15);
 
-        ),
-        // Enable tooltip
-        tooltipBehavior: TooltipBehavior(enable: true,
-            builder: (a,b,c,d,e){
-          DataDayModel pdm = widget.data[widget.current].data.reversed.toList()[
+
+  Widget  tab(List<DataColumn> columns,List<DataRow> rows) => DataTable(columns: columns,rows: rows);
+
+
+  Widget lineChart(List<ChartSeries<DataDayModel, String>> data,String title)=> SfCartesianChart(
+    // Initialize category axis
+      primaryXAxis: CategoryAxis(isVisible: false),
+      primaryYAxis: NumericAxis(isVisible: true,minimum: getMin.toDouble(),),
+      borderColor: Colors.transparent,
+      backgroundColor: Colors.transparent,
+      plotAreaBackgroundColor: Colors.transparent,
+      plotAreaBorderColor: Colors.transparent,
+
+      // Chart title
+      title: ChartTitle(text: title,),
+      // Enable legend
+      legend: Legend(isVisible: true,position: LegendPosition.bottom
+          ,width: '280'
+
+      ),
+      // Enable tooltip
+      tooltipBehavior: TooltipBehavior(enable: true,
+          builder: (a,b,c,d,e){
+            DataDayModel pdm = widget.data[widget.current].data.reversed.toList()[
             widget.data[widget.current].data.length + d -1  - getPr(getPredicts)];
-          return SizedBox(width:pdm is PredictDayModel ? 110 : 90,height: pdm is PredictDayModel ? 85 : 45,
+            return SizedBox(width:pdm is PredictDayModel ? 110 : 90,height: pdm is PredictDayModel ? 85 : 45,
               child: Column(
                 children: [
                   const SizedBox(height: 3,),
@@ -177,12 +251,12 @@ class _dataMonitoring extends State<DataMonitoring>{
                     Text('بازه دوم : ${pdm.max95.toInt()}-${pdm.min80.toInt()}',style: SpecialTextStyle(color: Colors.white,size: 10),),
                 ],
               ),
-          );
-        }
-        ),
-        series:data
-    );
-  }
+            );
+          }
+      ),
+      series:data
+  );
+
 
   List<ChartSeries<DataDayModel, String>> getCurrentChartSeries(){
     List<List<ChartSeries<DataDayModel, String>>> chartSeries =
@@ -200,17 +274,23 @@ class _dataMonitoring extends State<DataMonitoring>{
       color: ThemeColors.PRIMARY,
       name: 'پیشبینی',
       width: 3,
+      // onPointTap: (c)=>
+      //     ShowDataDialog(
+      //       model: widget.data[widget.current].data[(getPr(getPredicts)-(c.viewportPointIndex??-1)).toInt()] as PredictDayModel,
+      //       onCancel: (){Navigator.of(context).pop();},),
+
       // Bind data source
       dataSource:  past(widget.data[widget.current].data.reversed.toList(), getPredicts),
       xValueMapper: (DataDayModel model, _) => getName(model),
-      yValueMapper: (DataDayModel model, _) => (model is PredictDayModel ||  (getName(model) == lastData))? (model).main-getMin : null
+      yValueMapper: (DataDayModel model, _) => (model is PredictDayModel ||  (getName(model) == lastData))? (model).main
+          : null
   );
 
   String getName(DataDayModel model){
-    String s = (model is PredictDayModel) ? (model.name.isEmpty ? predictTitles[model.index-1] : model.name) :
+    String s = (model is PredictDayModel) ? (model.name.isEmpty ? 'پیش بینی برای دوره ${predictTitles[model.index-1]}' : model.name) :
     model.name.isEmpty ? (model.index == widget.data[widget.current].data.length - getPredicts ?lastData:'داده ${model.index}' ): model.name;
     //print((model.index == widget.data[widget.current].data.length - getPredicts ?lastData:'داده ${model.index}' ));
-      return s;}
+    return s;}
   ChartSeries<DataDayModel, String> pastList() => LineSeries<DataDayModel, String>(
       color: ThemeColors.DARK,
       name: 'داده',
@@ -219,7 +299,7 @@ class _dataMonitoring extends State<DataMonitoring>{
       dataSource:  past(widget.data[widget.current].data.reversed.toList(), getPredicts),
       xValueMapper: (DataDayModel model, _) => getName(model),
       yValueMapper: (DataDayModel model, _) => (model is PredictDayModel)
-          ? null : (model).main-getMin
+          ? null : (model).main
   );
   int get getPredicts {
     int result = 0;
@@ -238,31 +318,31 @@ class _dataMonitoring extends State<DataMonitoring>{
   }
   int getPr(int i) => i < 7 ? 15 : 2*i;
   ChartSeries<DataDayModel, String> L1List() =>
-    RangeAreaSeries<DataDayModel, String>(
-      dataSource: past(widget.data[widget.current].data.reversed.toList(), getPredicts),
-      name: 'بازه اطمینان اول',
-      borderWidth: 2,
-      opacity: 0.5,
-      color: Color(0xF5DEBC),//ThemeColors.PRIMARY_DARK,
-      borderDrawMode: RangeAreaBorderMode.excludeSides,
-      xValueMapper: (DataDayModel sales, _) => getName(sales),
-      highValueMapper: (DataDayModel sales, _) => (sales is PredictDayModel)? (sales).max80-getMin : ((getName(sales) == lastData) ?(sales.main-getMin):null),
-      lowValueMapper: (DataDayModel sales, _) => (sales is PredictDayModel ) ? (sales).min95-getMin :((getName(sales) == lastData) ?(sales.main-getMin):null),
-      //  highValueMapper:(DataDayModel sales, _) => 15000,
-      //lowValueMapper: (DataDayModel sales, _) =>10000,
-    );
+      RangeAreaSeries<DataDayModel, String>(
+        dataSource: past(widget.data[widget.current].data.reversed.toList(), getPredicts),
+        name: 'بازه اطمینان اول',
+        borderWidth: 2,
+        opacity: 0.5,
+        color: Color(0xF5DEBC),//ThemeColors.PRIMARY_DARK,
+        borderDrawMode: RangeAreaBorderMode.excludeSides,
+        xValueMapper: (DataDayModel sales, _) => getName(sales),
+        highValueMapper: (DataDayModel sales, _) => (sales is PredictDayModel)? (sales).max80 : ((getName(sales) == lastData) ?(sales.main):null),
+        lowValueMapper: (DataDayModel sales, _) => (sales is PredictDayModel ) ? (sales).min95 :((getName(sales) == lastData) ?(sales.main):null),
+        //  highValueMapper:(DataDayModel sales, _) => 15000,
+        //lowValueMapper: (DataDayModel sales, _) =>10000,
+      );
   ChartSeries<DataDayModel, String> L2List(Color color) =>RangeAreaSeries<DataDayModel, String>(
 
     dataSource: past(widget.data[widget.current].data.reversed.toList(), getPredicts),
     name: 'بازه اطمینان دوم',
     borderWidth: 2,
     opacity: 0.5,
-   //borderColor: Colors.brown,//ThemeColors.PRIMARY_LIGHT,
+    //borderColor: Colors.brown,//ThemeColors.PRIMARY_LIGHT,
     color: color,//ThemeColors.PRIMARY_LIGHT,
     borderDrawMode: RangeAreaBorderMode.excludeSides,
     xValueMapper: (DataDayModel sales, _) => getName(sales),
-    highValueMapper: (DataDayModel sales, _) => (sales is PredictDayModel)? (sales).max95-getMin : ((getName(sales) == lastData) ?(sales.main-getMin):null),
-    lowValueMapper: (DataDayModel sales, _) => (sales is PredictDayModel ) ? (sales).min80-getMin :((getName(sales) == lastData) ?(sales.main-getMin):null),
+    highValueMapper: (DataDayModel sales, _) => (sales is PredictDayModel)? (sales).max95 : ((getName(sales) == lastData) ?(sales.main):null),
+    lowValueMapper: (DataDayModel sales, _) => (sales is PredictDayModel ) ? (sales).min80 :((getName(sales) == lastData) ?(sales.main):null),
   );
 
 

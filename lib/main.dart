@@ -24,6 +24,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    //LocalData.clearAll(15);
     return MaterialApp(
 
         localizationsDelegates: const [
@@ -32,7 +33,7 @@ class MyApp extends StatelessWidget {
           GlobalWidgetsLocalizations.delegate,
         ],
         supportedLocales: const [
-          Locale("fa", "IR"), // OR Locale('ar', 'AE') OR Other RTL locales
+          Locale("fa", "IR"),
         ],
 
       locale: const Locale('fa','IR'),
@@ -65,7 +66,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  List<PredictModel>? allData;
+  List<PredictModel>? allData = List.empty(growable: true);
   final Function(int,PredictModel?)? onItemClick;
   MyHomePage({super.key, required this.title, this.onItemClick});
 
@@ -77,39 +78,86 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
+bool ran = false;
 
   @override
   Widget build(BuildContext context) {
-
+    //LocalData.clearAll(13);
     LocalData.getLocalData().then((value) => setState(()=>widget.allData=value));
-
     return Scaffold(
       backgroundColor: ThemeColors.LIGHT,
+
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text(widget.title),
-        actions: [Padding(padding: const EdgeInsets.all(10),
+        actions: [
+          Padding(padding: const EdgeInsets.only(top: 10,bottom: 10),
+              child:InkWell(
+                  onTap: ()=> showAlertDialog(context, 'حذف داده های اپ',
+                      'آیا با حذف داده های اپلیکیشن موافقید؟ این کار باعث حذف تمامی پیش بینی ها می شود!', 'حذف', 'لغو',
+                          (){LocalData.clearAll(50);Navigator.pop(context);}),
+                  child: const Icon(Icons.delete_forever,color: Colors.red,))),
+          Padding(padding: const EdgeInsets.all(10),
           child: InkWell(child: const Icon(Icons.account_circle,size: 40,),
-            onTap: (){Navigator.push(context, MaterialPageRoute(builder: (_) => const Profile()));},),)
+            onTap: (){showDialog(
+                context: context,
+                builder: (v)=>Profile(),
+
+            );
+            },),)
           ,
-            Padding(padding: const EdgeInsets.only(left: 10, right: 0,top: 15,bottom: 5),
-            child:Image.asset('assets/images/img.png'))
+            // Padding(padding: const EdgeInsets.only(left: 10, right: 0,top: 15,bottom: 5),
+            // child:Image.asset('assets/images/img.png'),),
+
         ],
 
       ),
       body: Center(
-        child: Column(
+        child: ListView(
           children: children(widget.allData),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'add',
-        onPressed: ()=>_gotoAdd(null,null,null,null,null,null,null),
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      // floatingActionButton: FloatingActionButton(
+      //   heroTag: 'add',
+      //   onPressed: ()=>_gotoAdd(null,null,null,null,null,null,null),
+      //   tooltip: 'Increment',
+      //   child: const Icon(Icons.add),
+      // ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
+
+
+  showAlertDialog(BuildContext context,String title,String text,String ok,String cancel,VoidCallback okCall) {
+
+  // set up the button
+  Widget okButton = TextButton(
+    child: Text(ok),
+    onPressed: okCall,
+  );
+  Widget cancelButton = TextButton(
+    child: Text(cancel),
+    onPressed: ()=>Navigator.of(context).pop(),
+  );
+
+  // set up the AlertDialog
+  AlertDialog alert = AlertDialog(
+    title: Text(title),
+    content: Text(text),
+    actions: [
+      cancelButton,
+      okButton,
+    ],
+  );
+
+  // show the dialog
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return alert;
+    },
+  );
+}
+
 
   List<Widget> children(List<PredictModel>? allData){
     List<Widget> result = List.empty(growable: true);
@@ -134,23 +182,55 @@ class _MyHomePageState extends State<MyHomePage> {
                 );
           },
           onDuplicateTap:(i,p)=> _gotoAdd(p!.name,p.p,p.c,p.t,p.L1i,p.L2i,p.filePath),
-            //_gotoAdd(p!.name,p.p,p.c,p.t,p.L1i,p.L2i),
+            onDeleteTap: (i,p)=>showDeleteAlertDialog(context, p!.name,()=>LocalData.deletePr(p.name, context)),
           )
         );
       }
     }
+
+    result.add(const SizedBox(height: 100,));
     return result;
 
   }
 
   Center getText(String text) => Center(child: Text(text,style: const TextStyle(fontSize: 20,fontWeight: FontWeight.bold),),);
 
+  showDeleteAlertDialog(BuildContext context,String name,VoidCallback ok) {
+
+    // set up the button
+    Widget okButton = TextButton(
+      onPressed: (){ok();Navigator.of(context).pop();},
+      child: const Text("بله"),
+    );
+    Widget noButton = TextButton(
+      child: const Text("خیر"),
+      onPressed: ()=>Navigator.of(context).pop(),
+    );
+
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text(" حذف $name"),
+      content: Text("آیا مطمئنید که $name حذف شود ؟ "),
+      actions: [
+        noButton,
+        okButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
   showLoaderDialog(BuildContext context){
     AlertDialog alert=AlertDialog(
-      content: new Row(
+      content: Row(
         children: [
-          CircularProgressIndicator(),
-          Container(margin: EdgeInsets.only(right: 7),child:Text("در حال بار گزاری" )),
+          const CircularProgressIndicator(),
+          Container(margin: const EdgeInsets.only(right: 7),child:const Text("در حال بار گزاری" )),
         ],),
     );
     showDialog(barrierDismissible: false,
@@ -182,26 +262,25 @@ class _MyHomePageState extends State<MyHomePage> {
             showLoaderDialog(context);
             print(widget.allData!.length);
           });
-          Net.addProduct(f!).then((value){
+          Net.addProduct(f!,context).then((value){
             semaphor--;
             if(semaphor == 0) {
               Net.afterUpload(current,()=>setState(() {
-                widget.allData!.remove(temp);
                 Navigator.pop(context);
-              }));
+              }),context);
 
             }
           });
           String data = toPHP(n, p, c, t, L1, L2, ch(10));
           FileStorage fs = FileStorage(name:'data.php');
           File dataFile = await fs.write(data);
-          Net.addProduct(dataFile).then((value){
+          Net.addProduct(dataFile,context).then((value){
             semaphor--;
             if(semaphor == 0) {
               Net.afterUpload(current,()=>setState(() {
-                widget.allData!.remove(temp);
+                ///widget.allData!.remove(temp);
                 Navigator.pop(context);
-              }));
+              }),context);
             }
           });
         }
@@ -209,8 +288,10 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  //void Snack(String text) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text),));
+
   String toPHP(String n,int p,int c,String t,int L1,int L2,String s) => 
-      '<?php ${ec('value')} $s ${e(L1)} $s ${e(L2)} $s ${e(p)} $s ${ec(t)} ?>';
+      '<?php ${ec('value')} $s ${e(L1)} $s ${e(L2)} $s ${e(p)} $s ${ec(t)} $s ${e(c)} ?>';
   String ec(String i) => 'echo($i);';
   String e(int i) => 'echo($i);';
   String ch(int i) => ec('chr($i)');

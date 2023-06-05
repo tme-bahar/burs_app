@@ -12,10 +12,7 @@ class DataElement extends StatelessWidget{
   final String? defaultName;
   DataElement({super.key, this.width, this.height,required this.model, this.defaultName});
   final String lastData = 'آخرین داده';
-  final List<String> predictTitles =['اولین روز پیشبینی','دومین روز پیشبینی','سومین روز پیشبینی','چهارمین روز پیشبینی',
-    'پنجمین روز پیشبینی','ششمین روز پیشبینی','هفتمین روز پیشبینی','هشتمین روز پیشبینی',
-    'نهمین روز پیشبینی','دهمین روز پیشبینی',
-  ];
+
   @override
   Widget build(BuildContext context) {
     const double height = 75;

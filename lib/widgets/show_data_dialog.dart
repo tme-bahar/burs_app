@@ -10,15 +10,22 @@ class ShowDataDialog extends StatelessWidget{
   final VoidCallback onCancel;
   ShowDataDialog({super.key,required this.model, required this.onCancel});
   final String lastData = 'آخرین داده';
-  final List<String> predictTitles =['اولین روز پیشبینی','دومین روز پیشبینی','سومین روز پیشبینی','چهارمین روز پیشبینی',
-    'پنجمین روز پیشبینی','ششمین روز پیشبینی','هفتمین روز پیشبینی','هشتمین روز پیشبینی',
-    'نهمین روز پیشبینی','دهمین روز پیشبینی',
+  List<String> predictTitles =['اول','دوم','سوم','چهارم',
+    'پنجم','ششم','هفتم','هشتم',
+    'نهم','دهم','یازدهم','دوازدهم','سیزدهم','چهاردهم','پانزدهم'
+    ,'شانزدهم','هفدهم','هجدهم','نوزدهم','بیستم','بیست و یکم','بیست و دوم',
+    'بیست و سوم','بیست و چهارم','بیست و پنجم',
   ];
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20,vertical:  (MediaQuery.of(context).size.height/2)-210),
+    return DefaultTextStyle(
+        style: TextStyle(),
+        child:Container(
+      margin:
+      EdgeInsets.symmetric(horizontal: (MediaQuery.of(context).size.width/2)-200,
+          vertical:  (MediaQuery.of(context).size.height/2)-130),
+
       decoration: const BoxDecoration(
       borderRadius: BorderRadius.all(Radius.circular(20)),color: ThemeColors.LIGHT,
       ),
@@ -34,22 +41,23 @@ class ShowDataDialog extends StatelessWidget{
                   borderRadius: BorderRadius.all(Radius.circular(10)),
                   onTap: ()=>onCancel(),
                   child: const Icon(Icons.cancel,size: 30,),),
+                color: ThemeColors.LIGHT,
               ),
             ],),
-            DataLineChart(main: model.main.toDouble(), max1: model.max95.toDouble(),
-                max2: model.max80.toDouble(), min1: model.min95.toDouble(), min2: model.min80.toDouble()),
+            // DataLineChart(main: model.main.toDouble(), max1: model.max95.toDouble(),
+            //     max2: model.max80.toDouble(), min1: model.min95.toDouble(), min2: model.min80.toDouble()),
             getTextRow('پیش بینی', model.main.toInt().toString(),false),
-            getTextRow('کران بالای بازه اطمینان 95%', model.max80.toInt().toString(),true),
-            getTextRow('کران پایین بازه اطمینان 95%', model.min95.toInt().toString(),false),
-            getTextRow('کران بالای بازه اطمینان 80%', model.max95.toInt().toString(),true),
-            getTextRow('کران پایین بازه اطمینان 80%', model.min80.toInt().toString(),false),
+            getTextRow('کران بالای بازه اطمینان اول', model.max80.toInt().toString(),true),
+            getTextRow('کران پایین بازه اطمینان اول', model.min95.toInt().toString(),false),
+            getTextRow('کران بالای بازه اطمینان دوم', model.max95.toInt().toString(),true),
+            getTextRow('کران پایین بازه اطمینان دوم', model.min80.toInt().toString(),false),
           ],
         )
-    );
+    ));
 
   }
   String getName(DataDayModel model){
-    String s = (model is PredictDayModel) ? (model.name.isEmpty ? predictTitles[model.index] : model.name) :
+    String s = (model is PredictDayModel) ? (model.name.isEmpty ? 'پیش بینی برای روز ${predictTitles[model.index-1]}' : model.name) :
     model.name.isEmpty ? 'داده ${model.index}' : model.name;
     print(s);
     return s;}

@@ -47,7 +47,7 @@ class ComboBox extends StatelessWidget{
                   ),
                 ),
                 const SizedBox(height: 1,),
-                Line(color: ThemeColors.PRIMARY_DARK,),
+                 Line(color: ThemeColors.PRIMARY_DARK,width: MediaQuery.of(context).size.width-40,),
               ]
           )
       );

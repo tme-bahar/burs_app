@@ -13,6 +13,7 @@ class HomeListElement extends StatefulWidget{
   final String? subTitle;
   final PredictModel? pm;
   final Function(int,PredictModel?)? onDuplicateTap;
+  final Function(int,PredictModel?)? onDeleteTap;
 
   const HomeListElement({
   super.key,
@@ -23,7 +24,9 @@ class HomeListElement extends StatefulWidget{
   this.index,
   this.title,
   this.subTitle,
-  this.pm, this.onDuplicateTap
+  this.pm,
+  this.onDuplicateTap,
+  this.onDeleteTap
   });
   @override
   State<StatefulWidget> createState() => _homeListElement();
@@ -45,43 +48,69 @@ class _homeListElement extends State<HomeListElement>{
           child:
           Column(children: [
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Padding(padding: const EdgeInsets.symmetric(
-                    horizontal: circleHorizontalPadding,
-                    vertical: circleVerticalPadding
-                ),
-                  child: Container(
-                    height: (widget.height ?? height) - 2*circleVerticalPadding,
-                    width: (widget.height ?? height) - 2*circleVerticalPadding,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: widget.onTap != null ? ThemeColors.PRIMARY_LIGHT : Colors.yellow
-                    ),
-                    child: widget.circleChild ?? const Icon(Icons.help_outline),
+                SizedBox(
+                  child: Row(
+                    children: [
+                      Padding(padding: const EdgeInsets.symmetric(
+                        vertical: circleVerticalPadding,
+                        horizontal: circleHorizontalPadding,
+                      ),
+                        child: Container(
+                          height: (widget.height ?? height) - 2*circleVerticalPadding,
+                          width: (widget.height ?? height) - 2*circleVerticalPadding,
+                          decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: widget.onTap != null ? ThemeColors.PRIMARY_LIGHT : Colors.yellow
+                          ),
+                          child: widget.circleChild ?? const Icon(Icons.help_outline),
+                        ),
+                      ),
+                      Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(widget.title ?? '',
+                              style: const TextStyle(color: ThemeColors.DARK,fontWeight: FontWeight.bold,fontSize: 20),),
+                            if(widget.subTitle != null)
+                              Text(widget.subTitle ?? '',
+                                style: const TextStyle(color: ThemeColors.PRIMARY_DARK,fontSize: 10),)
+                          ],),
+                    ],
                   ),
                 ),
                 SizedBox(
-                  width: MediaQuery.of(context).size.width*(.6),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  child: Row(
                     children: [
-                      co(Text(widget.title ?? '',
-                        style: const TextStyle(color: ThemeColors.DARK,fontWeight: FontWeight.bold,fontSize: 20),),
-                      ),
-                      if(widget.subTitle != null)
-                        co(Text(widget.subTitle ?? '',
-                          style: const TextStyle(color: ThemeColors.PRIMARY_DARK,fontSize: 10),)
+                      if(widget.onDuplicateTap != null)
+                        Padding(padding: const EdgeInsets.symmetric(
+                          vertical: circleVerticalPadding,
+                          horizontal: circleVerticalPadding,
+                        ),
+                          child: FloatingActionButton.small(
+                            heroTag: 'duplicate ${widget.title}',
+                            onPressed: ()=>widget.onDuplicateTap!(widget.index??0,widget.pm),
+                            child: Icon(Icons.note_add_outlined,color: ThemeColors.PRIMARY_DARK),
+                            backgroundColor: ThemeColors.LIGHT,
+                            elevation: 1,
+                          ),
+                        ),
+                      if(widget.onDeleteTap != null)
+                        Padding(padding: const EdgeInsets.symmetric(
+                          vertical: circleVerticalPadding,
+                          horizontal: circleVerticalPadding,
+                        ),
+                          child: FloatingActionButton.small(
+                            heroTag: 'delete ${widget.title}',
+                            onPressed: ()=>widget.onDeleteTap!(widget.index??0,widget.pm),
+                            child: Icon(Icons.delete_forever,color: Colors.red),
+                            backgroundColor: ThemeColors.LIGHT,
+                            elevation: 1,
+                          ),
                         )
-                    ],),
-                ),
-                if(widget.onDuplicateTap != null)
-                  FloatingActionButton.small(
-                    heroTag: 'duplicate ${widget.title}',
-                      onPressed: ()=>widget.onDuplicateTap!(widget.index??0,widget.pm),
-                      child: Icon(Icons.note_add_outlined,color: ThemeColors.PRIMARY_DARK),
-                    backgroundColor: ThemeColors.LIGHT,
+                    ],
                   ),
-
+                )
               ],
           ),
             Container(
@@ -91,17 +120,6 @@ class _homeListElement extends State<HomeListElement>{
             )
           ])
         )
-    );
-  }
-  SizedBox co(Widget child){
-    return SizedBox(
-      width: (widget.width ?? MediaQuery.of(context).size.width)
-          - 2*circleVerticalPadding - circleHorizontalPadding - 65,
-      child: Row(mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          child
-        ],
-      ),
     );
   }
 }

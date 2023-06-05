@@ -15,30 +15,60 @@ class _profile extends State<Profile>{
   List<TextEditingController> controller = [TextEditingController()];
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: ThemeColors.LIGHT,
-      appBar: AppBar(
-        title: const Text('پروفایل'),
-      ),
-      body:ListView(
+    return DefaultTextStyle(
+        style: TextStyle(),
+    child:Container(
+        margin:
+        EdgeInsets.symmetric(horizontal: (MediaQuery.of(context).size.width/2)-220,
+            vertical:  (MediaQuery.of(context).size.height/2)-330),
+        decoration: const BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(20)),color: ThemeColors.LIGHT,
+        ),
+        child:ListView(
           children: <Widget>[
+            // getRow([
+            //   Text("پروفایل",
+            //     style: const TextStyle(color: ThemeColors.DARK,fontWeight: FontWeight.bold,fontSize: 18),),
+            //
+            //   Material(
+            //     child: InkWell(splashColor: ThemeColors.LIGHT,
+            //       borderRadius: BorderRadius.all(Radius.circular(10)),
+            //       onTap: ()=>Navigator.pop(context),
+            //       child: const Icon(Icons.cancel,size: 30,),),
+            //     color: ThemeColors.LIGHT,
+            //   ),
+            // ],),
             SizedBox(
-              height: MediaQuery.of(context).size.width*0.64,
-              width: MediaQuery.of(context).size.width,
+              height: 290,
+              width: 440,
               child:
               Stack(
                 children: [
+
                   Image.asset('assets/images/profileTop.jpg'),
-                  Align(alignment: Alignment.bottomCenter,
+                  const Align(alignment: Alignment.topCenter,
                     child: Padding(padding:
-                    EdgeInsets.only(bottom: MediaQuery.of(context).size.width*0.09),
-                      child: const Icon(Icons.account_circle_outlined,size: 90,),
+                    EdgeInsets.only(top: 135),
+                      child: Icon(Icons.account_circle_outlined,size: 120,),
                     ),
+                  ),
+                  Container(
+                    padding: EdgeInsets.only(top: 10,right: 10),
+                    alignment: Alignment.topRight,
+                    child:
+                  Material(
+                    child: InkWell(splashColor: ThemeColors.PRIMARY_DARK,
+                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                      onTap: ()=>Navigator.pop(context),
+                      child: const Icon(Icons.cancel,size: 30,color: Colors.white,),),
+                    color: ThemeColors.PRIMARY_DARK,
                   )
+                    ,),
                 ],
               ),
             ),
-            const SizedBox(height: 20,),
+
+            const SizedBox(height: 0,),
             DataFild('نام', Icons.account_circle),
             const SizedBox(height: 5,),
             DataFild('نام خانوادگی', Icons.account_box),
@@ -50,12 +80,12 @@ class _profile extends State<Profile>{
             // DataFild('کد بورسی', Icons.format_list_numbered_sharp),
             const SizedBox(height: 5,),
             DataFild('توضیحات', Icons.note_add_outlined),
-            const SizedBox(height: 5,),
+            const SizedBox(height: 20,),
             Padding(padding: const EdgeInsets.symmetric(vertical: 15,horizontal: 20),
                 child:Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SizedBox(width: (MediaQuery.of(context).size.width/ 2) - 40,
+                    SizedBox(width: 190,
                     child:SpecialButton(
                         backGroundColor: ThemeColors.PRIMARY_DARK,
                             children: const [
@@ -68,7 +98,7 @@ class _profile extends State<Profile>{
 
                     const SizedBox(width: 10,),
 
-                    SizedBox(width: (MediaQuery.of(context).size.width/ 2) - 40,
+                    SizedBox(width: 190,
                     child:SpecialButton(
                       backGroundColor: ThemeColors.PRIMARY_DARK,
                         children :const [
@@ -84,8 +114,9 @@ class _profile extends State<Profile>{
                 )
             ),
           ]
-        ),
-    );
+
+    )));
+
   }
 
   Widget DataFild(String text,IconData data) =>
@@ -102,5 +133,10 @@ class _profile extends State<Profile>{
   TextStyle _style([double? size,Color? color]) =>
       TextStyle(color: color ?? ThemeColors.PRIMARY_DARK,fontSize: size ?? 15,
       fontWeight: FontWeight.bold);
-
+  Padding getRow(List<Widget> children) => Padding(padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 20),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: children,
+    ),
+  );
 }
